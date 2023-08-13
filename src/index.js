@@ -20,15 +20,14 @@ async function run() {
         }
         const configContent = Buffer.from(data.content, "base64").toString("utf8");
         const yamlConfig = loadYaml(configContent);
-        const body = context.payload.issue.body;
         const labels = context.payload.issue.labels;
 
         let labelsToAdd = [];
 
-        if (body) {
-            if (typeof yamlConfig.labels != "undefined") {
-                for (const [label, bodyRegex] of Object.entries(yamlConfig.labels)) {
-                    console.log(`${label}: ${bodyRegex}`);
+        if (typeof yamlConfig != "undefined") {
+            const body = context.payload.issue.body;
+            if (body) {
+                for (const [label, bodyRegex] of Object.entries(yamlConfig)) {
                     var re_add = new RegExp(`- \\[[xX]] ${bodyRegex}`, "i");
                     var re_remove = new RegExp(`- \\[[ ]] ${bodyRegex}`, "i");
                     if (body.match(re_add) && !labels.some(e => e.name === label)) {
@@ -54,6 +53,26 @@ async function run() {
             }
         }
 
+        const completedLabel = getInput("completed-label");
+        const notPlannedLabel = getInput("not-planned-label")
+        if (completedLabel && notPlannedLabel) {
+            if (labels.some(e => e.name === completedLabel) || labels.some(e => e.name === notPlannedLabel)) {
+                let reason;
+                if (labels.some(e => e.name === completedLabel)) {
+                    reason = "completed"
+                }
+                else if (labels.some(e => e.name === notPlannedLabel)) {
+                    reason = "not_planned"
+                }
+                octokit.rest.issues.update({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    state: "closed",
+                    state_reason: reason
+                })
+            }
+        }
     } catch (error) {
         setFailed(error.message);
     }

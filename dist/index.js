@@ -13672,15 +13672,14 @@ async function run() {
         }
         const configContent = Buffer.from(data.content, "base64").toString("utf8");
         const yamlConfig = load(configContent);
-        const body = github.context.payload.issue.body;
         const labels = github.context.payload.issue.labels;
 
         let labelsToAdd = [];
 
-        if (body) {
-            if (typeof yamlConfig.labels != "undefined") {
-                for (const [label, bodyRegex] of Object.entries(yamlConfig.labels)) {
-                    console.log(`${label}: ${bodyRegex}`);
+        if (typeof yamlConfig != "undefined") {
+            const body = github.context.payload.issue.body;
+            if (body) {
+                for (const [label, bodyRegex] of Object.entries(yamlConfig)) {
                     var re_add = new RegExp(`- \\[[xX]] ${bodyRegex}`, "i");
                     var re_remove = new RegExp(`- \\[[ ]] ${bodyRegex}`, "i");
                     if (body.match(re_add) && !labels.some(e => e.name === label)) {
@@ -13706,6 +13705,26 @@ async function run() {
             }
         }
 
+        const completedLabel = (0,core.getInput)("completed-label");
+        const notPlannedLabel = (0,core.getInput)("not-planned-label")
+        if (completedLabel && notPlannedLabel) {
+            if (labels.some(e => e.name === completedLabel) || labels.some(e => e.name === notPlannedLabel)) {
+                let reason;
+                if (labels.some(e => e.name === completedLabel)) {
+                    reason = "completed"
+                }
+                else if (labels.some(e => e.name === notPlannedLabel)) {
+                    reason = "not_planned"
+                }
+                octokit.rest.issues.update({
+                    owner: github.context.repo.owner,
+                    repo: github.context.repo.repo,
+                    issue_number: github.context.issue.number,
+                    state: "closed",
+                    state_reason: reason
+                })
+            }
+        }
     } catch (error) {
         (0,core.setFailed)(error.message);
     }
