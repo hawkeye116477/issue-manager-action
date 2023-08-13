@@ -5,6 +5,9 @@ inputs:
   repo-token:
     description: 'The GITHUB_TOKEN secret'
     default: '${{ github.token }}'
+  mode:
+    description: "Name of task to do"
+    required: true
   configuration-path:
     description: 'Path to the configuration file'
     default: '.github/issue-manager.yml'

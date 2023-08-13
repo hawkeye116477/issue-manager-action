@@ -13657,74 +13657,106 @@ var jsYaml = {
 async function run() {
     try {
         const token = (0,core.getInput)("repo-token");
-        const octokit = (0,github.getOctokit)(token);
         const configPath = (0,core.getInput)("configuration-path");
-        const { data } = await octokit.rest.repos.getContent({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            ref: github.context.sha,
-            path: configPath,
-        });
-        if (!("content" in data)) {
-            throw new TypeError(
-                "The configuration path provided is not a valid file. Exiting"
-            );
-        }
-        const configContent = Buffer.from(data.content, "base64").toString("utf8");
-        const yamlConfig = load(configContent);
         const labels = github.context.payload.issue.labels;
+        const octokit = (0,github.getOctokit)(token);
 
-        let labelsToAdd = [];
-
-        if (typeof yamlConfig != "undefined") {
-            const body = github.context.payload.issue.body;
-            if (body) {
-                for (const [label, bodyRegex] of Object.entries(yamlConfig)) {
-                    var re_add = new RegExp(`- \\[[xX]] ${bodyRegex}`, "i");
-                    var re_remove = new RegExp(`- \\[[ ]] ${bodyRegex}`, "i");
-                    if (body.match(re_add) && !labels.some(e => e.name === label)) {
-                        labelsToAdd.push(label);
+        const mode = (0,core.getInput)("mode");
+        if (mode == "labelOpened") {
+            if (configPath) {
+                const { data } = await octokit.rest.repos.getContent({
+                    owner: github.context.repo.owner,
+                    repo: github.context.repo.repo,
+                    ref: github.context.sha,
+                    path: configPath,
+                });
+                if (!("content" in data)) {
+                    throw new TypeError(
+                        "The configuration path provided is not a valid file. Exiting"
+                    );
+                }
+                const configContent = Buffer.from(data.content, "base64").toString("utf8");
+                const yamlConfig = load(configContent);
+                let labelsToAdd = [];
+                if (typeof yamlConfig != "undefined") {
+                    const body = github.context.payload.issue.body;
+                    if (body) {
+                        for (const [label, bodyRegex] of Object.entries(yamlConfig)) {
+                            var re_add = new RegExp(`- \\[[xX]] ${bodyRegex}`, "i");
+                            var re_remove = new RegExp(`- \\[[ ]] ${bodyRegex}`, "i");
+                            if (body.match(re_add) && !labels.some(e => e.name === label)) {
+                                labelsToAdd.push(label);
+                            }
+                            if (body.match(re_remove) && labels.some(e => e.name === label)) {
+                                octokit.rest.issues.removeLabel({
+                                    issue_number: github.context.issue.number,
+                                    owner: github.context.repo.owner,
+                                    repo: github.context.repo.repo,
+                                    name: label
+                                })
+                            }
+                        }
+                        if (labelsToAdd.length > 0) {
+                            octokit.rest.issues.addLabels({
+                                issue_number: github.context.issue.number,
+                                owner: github.context.repo.owner,
+                                repo: github.context.repo.repo,
+                                labels: labelsToAdd
+                            })
+                        }
                     }
-                    if (body.match(re_remove) && labels.some(e => e.name === label)) {
-                        octokit.rest.issues.removeLabel({
-                            issue_number: github.context.issue.number,
+                }
+            }
+        }
+        else if (mode == "close" || mode == "labelClosed") {
+            const completedLabel = (0,core.getInput)("completed-label");
+            const notPlannedLabel = (0,core.getInput)("not-planned-label");
+            if (completedLabel && notPlannedLabel) {
+                if (mode == "close") {
+                    if (labels.some(e => e.name === completedLabel) || labels.some(e => e.name === notPlannedLabel)) {
+                        let reason;
+                        if (labels.some(e => e.name === completedLabel)) {
+                            reason = "completed"
+                        }
+                        else if (labels.some(e => e.name === notPlannedLabel)) {
+                            reason = "not_planned"
+                        }
+                        octokit.rest.issues.update({
                             owner: github.context.repo.owner,
                             repo: github.context.repo.repo,
-                            name: label
+                            issue_number: github.context.issue.number,
+                            state: "closed",
+                            state_reason: reason
                         })
                     }
                 }
-                if (labelsToAdd.length > 0) {
-                    octokit.rest.issues.addLabels({
-                        issue_number: github.context.issue.number,
-                        owner: github.context.repo.owner,
-                        repo: github.context.repo.repo,
-                        labels: labelsToAdd
-                    })
+                else {
+                    const reason = github.context.payload.issue.state_reason;
+                    if (reason === "completed" && !labels.some(e => e.name === completedLabel)) {
+                        octokit.rest.issues.addLabels({
+                            issue_number: github.context.issue.number,
+                            owner: github.context.repo.owner,
+                            repo: github.context.repo.repo,
+                            labels: [completedLabel]
+                        })
+                    }
+                    else if (reason === "not_planned" && !labels.some(e => e.name === notPlannedLabel)) {
+                        octokit.rest.issues.addLabels({
+                            issue_number: github.context.issue.number,
+                            owner: github.context.repo.owner,
+                            repo: github.context.repo.repo,
+                            labels: [notPlannedLabel]
+                        })
+                    }
                 }
             }
+        }
+        else {
+            throw new Error(
+                "Invalid task."
+            );
         }
 
-        const completedLabel = (0,core.getInput)("completed-label");
-        const notPlannedLabel = (0,core.getInput)("not-planned-label")
-        if (completedLabel && notPlannedLabel) {
-            if (labels.some(e => e.name === completedLabel) || labels.some(e => e.name === notPlannedLabel)) {
-                let reason;
-                if (labels.some(e => e.name === completedLabel)) {
-                    reason = "completed"
-                }
-                else if (labels.some(e => e.name === notPlannedLabel)) {
-                    reason = "not_planned"
-                }
-                octokit.rest.issues.update({
-                    owner: github.context.repo.owner,
-                    repo: github.context.repo.repo,
-                    issue_number: github.context.issue.number,
-                    state: "closed",
-                    state_reason: reason
-                })
-            }
-        }
     } catch (error) {
         (0,core.setFailed)(error.message);
     }
