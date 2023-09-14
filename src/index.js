@@ -36,6 +36,7 @@ async function run() {
                                 labelsToAdd.push(label);
                             }
                             if (body.match(re_remove) && labels.some(e => e.name === label)) {
+                                console.log(`Removing "${label}" label from issue #${context.issue.number} ...`);
                                 octokit.rest.issues.removeLabel({
                                     issue_number: context.issue.number,
                                     owner: context.repo.owner,
@@ -45,6 +46,11 @@ async function run() {
                             }
                         }
                         if (labelsToAdd.length > 0) {
+                            let labelSingleOrNot = "label"
+                            if (labelsToAdd.length > 1) {
+                                labelSingleOrNot = "labels"
+                            }
+                            console.log(`Adding "${labelsToAdd.join(", ")}" ${labelSingleOrNot} to issue #${context.issue.number} ...`);
                             octokit.rest.issues.addLabels({
                                 issue_number: context.issue.number,
                                 owner: context.repo.owner,
@@ -69,6 +75,7 @@ async function run() {
                         else if (labels.some(e => notPlannedLabel.includes(e.name))) {
                             reason = "not_planned"
                         }
+                        console.log(`Closing issue #${context.issue.number} ...`);
                         octokit.rest.issues.update({
                             owner: context.repo.owner,
                             repo: context.repo.repo,
@@ -80,22 +87,24 @@ async function run() {
                 }
                 else {
                     const reason = context.payload.issue.state_reason;
+                    let labelsToAdd = [];
                     if (reason === "completed" && !labels.some(e => completedLabel.includes(e.name))) {
-                        octokit.rest.issues.addLabels({
-                            issue_number: context.issue.number,
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            labels: completedLabel
-                        })
+                        labelsToAdd = completedLabel
                     }
                     else if (reason === "not_planned" && !labels.some(e => notPlannedLabel.includes(e.name))) {
-                        octokit.rest.issues.addLabels({
-                            issue_number: context.issue.number,
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            labels: notPlannedLabel
-                        })
+                        labelsToAdd = notPlannedLabel
                     }
+                    let labelSingleOrNot = "label"
+                    if (labelsToAdd.length > 1) {
+                        labelSingleOrNot = "labels"
+                    }
+                    console.log(`Adding "${labelsToAdd.join(", ")}" ${labelSingleOrNot} to issue #${context.issue.number} ...`);
+                    octokit.rest.issues.addLabels({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        labels: labelsToAdd
+                    })
                 }
             }
         }
