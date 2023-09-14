@@ -57,16 +57,16 @@ async function run() {
             }
         }
         else if (mode == "close" || mode == "labelClosed") {
-            const completedLabel = getInput("completed-label");
-            const notPlannedLabel = getInput("not-planned-label");
+            const completedLabel = getInput("completed-label").trim().split("\n");
+            const notPlannedLabel = getInput("not-planned-label").trim().split("\n");
             if (completedLabel && notPlannedLabel) {
                 if (mode == "close") {
-                    if (labels.some(e => e.name === completedLabel) || labels.some(e => e.name === notPlannedLabel)) {
+                    if (labels.some(e => completedLabel.includes(e.name)) || labels.some(e => notPlannedLabel.includes(e.name))) {
                         let reason;
-                        if (labels.some(e => e.name === completedLabel)) {
+                        if (labels.some(e => completedLabel.includes(e.name))) {
                             reason = "completed"
                         }
-                        else if (labels.some(e => e.name === notPlannedLabel)) {
+                        else if (labels.some(e => notPlannedLabel.includes(e.name))) {
                             reason = "not_planned"
                         }
                         octokit.rest.issues.update({
@@ -80,20 +80,20 @@ async function run() {
                 }
                 else {
                     const reason = context.payload.issue.state_reason;
-                    if (reason === "completed" && !labels.some(e => e.name === completedLabel)) {
+                    if (reason === "completed" && !labels.some(e => completedLabel.includes(e.name))) {
                         octokit.rest.issues.addLabels({
                             issue_number: context.issue.number,
                             owner: context.repo.owner,
                             repo: context.repo.repo,
-                            labels: [completedLabel]
+                            labels: completedLabel
                         })
                     }
-                    else if (reason === "not_planned" && !labels.some(e => e.name === notPlannedLabel)) {
+                    else if (reason === "not_planned" && !labels.some(e => notPlannedLabel.includes(e.name))) {
                         octokit.rest.issues.addLabels({
                             issue_number: context.issue.number,
                             owner: context.repo.owner,
                             repo: context.repo.repo,
-                            labels: [notPlannedLabel]
+                            labels: notPlannedLabel
                         })
                     }
                 }
