@@ -1,6 +1,6 @@
 import { getInput, setFailed } from '@actions/core';
 import { getOctokit, context } from '@actions/github';
-import { load as loadYaml } from 'js-yaml';
+import { parse as loadYaml } from 'yaml';
 
 async function run() {
     try {

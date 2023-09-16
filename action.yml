@@ -1,7 +1,7 @@
 name: 'Issue Manager'
 description: ''
 author: 'hawkeye116477'
-inputs: 
+inputs:
   repo-token:
     description: 'The GITHUB_TOKEN secret'
     default: '${{ github.token }}'
