@@ -16,5 +16,5 @@ inputs:
   not-planned-label:
     description: 'Label for issues, which solving is not planned'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
