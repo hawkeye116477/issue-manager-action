@@ -22,7 +22,7 @@
   "dependencies": {
     "@actions/core": "^1.11",
     "@actions/github": "^6.0",
-    "yaml": "^2.6"
+    "yaml": "^2.7"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.38"
