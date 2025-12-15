@@ -20,7 +20,7 @@
     "build": "ncc build src/index.js -o dist --license licenses.txt"
   },
   "dependencies": {
-    "@actions/core": "^1.11",
+    "@actions/core": "^2.0",
     "@actions/github": "^6.0",
     "yaml": "^2.8"
   },
