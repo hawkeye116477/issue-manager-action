@@ -1,22 +1,16 @@
-name: Dependabot updates
+name: Rebuild
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  workflow_dispatch: null
 
 permissions:
   contents: write
-  pull-requests: read
 
 
 jobs:
   build:
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch Dependabot metadata
-        id: dependabot-metadata
-        uses: dependabot/fetch-metadata@v2
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -37,5 +31,5 @@ jobs:
             git config --local user.name "github-actions[bot]"
             git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
             git add --all
-            git commit -m "Rebuild after depends updates"
-            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+            git commit -m "Rebuild"
+            git push
