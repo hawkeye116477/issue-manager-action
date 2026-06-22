@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["* 21-23 * * 0"],
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "enabled": true,
+      "labels": ["dependabot", "npm"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "enabled": true,
+      "labels": ["dependabot", "actions"]
+    }
+  ],
+  "rangeStrategy": "update-lockfile",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "labels": ["dependabot", "npm"]
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  }
+}
