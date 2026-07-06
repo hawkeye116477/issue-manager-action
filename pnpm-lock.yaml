@@ -19,8 +19,8 @@ importers:
         version: 2.9.0
     devDependencies:
       '@vercel/ncc':
-        specifier: ^0.44.0
-        version: 0.44.0
+        specifier: ^0.44.1
+        version: 0.44.1
 
 packages:
 
@@ -84,8 +84,8 @@ packages:
   '@octokit/types@16.0.0':
     resolution: {integrity: sha512-sKq+9r1Mm4efXW1FCk7hFSeJo4QKreL/tTbR0rz/qx/r1Oa2VV83LTA/H/MuCOX7uCIJmQVRKBcbmWoySjAnSg==}
 
-  '@vercel/ncc@0.44.0':
-    resolution: {integrity: sha512-pHyI+bZokSgIscTKFSmpNk5vZzmOrb9RW0Vu4SRyqUvkJ0kgg3PzaZLLDVTFXhbUiCqg0/Eu8L4fKtgViA92kg==}
+  '@vercel/ncc@0.44.1':
+    resolution: {integrity: sha512-cUjIE5P2YY1n+Kt9rFIazMMpGoPn1Fic04rOmTkElMkiDP5oszGfERMpo2shVkFKDL7rVppdM2pqJKC59shQWQ==}
     hasBin: true
 
   before-after-hook@4.0.0:
@@ -199,7 +199,7 @@ snapshots:
     dependencies:
       '@octokit/openapi-types': 27.0.0
 
-  '@vercel/ncc@0.44.0': {}
+  '@vercel/ncc@0.44.1': {}
 
   before-after-hook@4.0.0: {}
 
