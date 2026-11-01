@@ -27,7 +27,7 @@ jobs:
       - name: Set Node.js version
         uses: actions/setup-node@v7
         with:
-          node-version: '24.x'
+          node-version: '26.x'
           cache: 'pnpm'
       - run: |
             git config --global --add safe.directory "$GITHUB_WORKSPACE"
